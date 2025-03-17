@@ -58,7 +58,7 @@ template<typename T> std::pair<bool, size_t> Tab<T>::search(const T & searched) 
 }
 
 template<typename T> void Tab<T>::operator = (const Tab& tab){
-    length = tab.lenth;
+    length = tab.length;
     delete[] data;
     data = new T[length];
     for(size_t i=0; i<length; i++){

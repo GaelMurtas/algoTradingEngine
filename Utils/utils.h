@@ -71,6 +71,11 @@ class Tab{
         return data[i-1];
         }
 
+      //get the last entree in the tab
+      const T & last(){
+           return getConst1(length);
+      }
+
       //autres utilitaires
       //sipression d'un élément O(n)
       void remove(const size_t &);
@@ -142,6 +147,8 @@ class TabExt : public Tab<T>{
           //si besoin on étant le tableu actuel ou en cré un nouveau que l'on relie en fonction de B
           void pushBack(const T&);
           TabExt& operator + (const T&);
+
+          void operator=(const Tab<T> &);
 };
 
 //cas B=false

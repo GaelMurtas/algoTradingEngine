@@ -17,14 +17,14 @@
 
 //Les différents événements qui nécessite une réaction de la part d'un bot de trading
 enum class Event{
-     newCandle, successfullBought
+     newCandle, successfullBought, successfullSold
 };
 
 /*
  * classe mère pour les trading bots
  * Chaque bot aura sa déclaration dans un fichier spécialisé
  */
-class TradingBot: protected Chart{
+class TradingBot: public Chart{
      public:
      //nombre de bougie à utiliser dans l'historique
      static constexpr unsigned windowSize = 20;
@@ -55,7 +55,7 @@ class TradingBot: protected Chart{
      //Dans cette classe qui n'as pas vocation à être utiliser directement on déclare une erreur si cette fonctions est appeller
      //En effet ce sont dans les classes filles que l'on va géré les évément via des spécialisations de cette méthode
      //Si cette fonction est appeller c'est donc qu'un évément non prévu tente d'être géré par un bot
-     template<Event event> void onEvent(){
+     template<Event event, class ... types> void onEvent(const types & ...){
           std::cout << "Evenement inconu détecté !\n";
           exit(-1);
      }
@@ -98,6 +98,7 @@ concept tradingAlgorithme = std::is_base_of<TradingBot, T>::value;
 template<bool real, tradingAlgorithme bot, class ... args>
 class Signal : public std::tuple<args ...>{
      public :
+          Signal();
           Signal(args ...);
      private :
           //fonction d'envoi du signal appeller automatique à la construction
@@ -107,7 +108,27 @@ class Signal : public std::tuple<args ...>{
 //contenu du signal par défault il sera spécialiser si besoin dans les boliothèque de spécialisation de chaque bot
 //long ou short, quantity, price
 template<bool real, tradingAlgorithme bot>
-using signal = Signal<real, bot, bool, double, double>;
+class DefaultSignal : public Signal<real, bot, bool, double, double>{
+     using Signal<real, bot, bool, double, double>::Signal;
+     public:
+          bool getType(){//true for buy false for sell
+               return get<0>(*this);
+          }
+          bool getLot(){//true for buy false for sell
+               return get<1>(*this);
+          }
+          bool getPrice(){//true for buy false for sell
+               return get<2>(*this);
+          }
+
+     //to alow motherclass convertion
+     DefaultSignal(const Signal<real, bot, bool, double, double> &);
+};
+
+template<bool real, tradingAlgorithme bot>
+using signal = DefaultSignal<real, bot>;
+
+
 
 /*
 * Classe respossable de géré les différents bots de trading en simultané
@@ -136,24 +157,41 @@ class BotsHandler : public BotsHandlerInterface{
 /*
  * Pour chaque algorithme on aura des métriques bien précises à traker
  * Ainsi nous pourons meusure les performances
- * On définit ici des métriques par défault mais chaque algo pour les redéfinir par un spécialisation
- * total gain et max drowdown
+ * On définit ici des métriques par défault mais chaque algo peut les redéfinir par un spécialisation
+ * capital, total gain et max drawdown
  */
 template<tradingAlgorithme bot>
-class Metrics : std::tuple<double, double>{
-     using std::tuple<double, double>::tuple;
+class Metrics : std::tuple<double, double, double>{
+     using std::tuple<double, double, double>::tuple;
      public:
      void print();
+     static constexpr double baseCapital = 10000;
+
+     //metrics base accors
+     double& getCapital(){
+         return std::get<0>(*this);
+     }
+     double& getGain(){
+         return std::get<1>(*this);
+     }
+     double& getDrawdown(){
+         return std::get<2>(*this);
+     }
 };
 
 /*
  * Enviroment contrôler pour un entraînement efficae des algorithmes
  * Nous utiliserons un chart dont on lira les bougie au fur et à meusure
  * à chaque nouvelle bougie lue, on considèrera un événement newCandle sur l'algorithme
+ * pour l'instant on pévoit la possibilité d'entrainer qu'un seul bot à la fois sur un seul jeu de données
+ * A FAIRE: prévoir la possibilité d'entrainer sur plusieurs jeux de données en parallèles
+ *          Avoir un vrais singleton, ici on peut avoir autant d'instance différente que de "botType" différents
  */
 template<tradingAlgorithme botType>
 class TrainingEnvironment : private Chart, Metrics<botType>{
      private:
+          //in order to insure that we keep a unique TrainingEnvironment at the time
+          static inline TrainingEnvironment<botType>* instance;
           //keep track of readed candel
           size_t tracker;
           //the actual instant of the algo trained
@@ -167,7 +205,10 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
           //we also upgrade the metrics here
           void passOrders();
           //we place the order given by the signal sending the trading bot
-          void placeOrder(signal<0, botType>);
+          //usely done at the signal creation
+          void placeOrder(const signal<0, botType> &);
+          //remove un order, use to cancel one or if successfull passed
+          void removeOrder(const signal<0, botType> &);
 
      public:
      //like for a chart we create from a dataPath
@@ -176,7 +217,15 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
      //lanch the training of the trading bot and print us the results
      void launchTraining();
 
-     friend class Signal<0, botType>;
+     //accessor
+     static TrainingEnvironment* getInstance(){
+          //A FAIRE erreur si l'instance est NULL 
+          return instance;
+     }
+
+     //A FAIRE: on peut utiliser une déclaration d'amitier avec template pour incuretous les type de signaux
+     friend class Signal<0, botType,  bool, double, double>;
+     friend class DefaultSignal<0, botType>;
 };
 
 #endif

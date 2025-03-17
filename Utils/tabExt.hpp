@@ -29,3 +29,12 @@ template<typename T, unsigned V, bool B> TabExt<T, V, B>& TabExt<T, V, B>::opera
     pushBack(A);
   return *this;}
 
+  template<typename T, unsigned V, bool B> void TabExt<T, V, B>::operator = (const Tab<T> & tab){
+    length = tab.lenth;
+    alloc = tab.length;
+    delete[] data;
+    data = new T[length];
+    for(size_t i=0; i<length; i++){
+        data[i] = tab.data[i];
+    }
+}

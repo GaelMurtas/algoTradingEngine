@@ -147,8 +147,9 @@ int main(){
     cout << "SUCCES \n";*/
     
      //SmartDCA test
-     /*TimeFrame tf(1,TimeUnit::h);
-     SmartDCA dca(20, "./Donnée/testHeston", tf);*/
+     TimeFrame tf(1,TimeUnit::h);
+     SmartDCA dca("./Donnée/testHeston", tf);
+     TrainingEnvironment<SmartDCA> TE("./Donnée/testHeston", tf, dca);
      return 0;
 }
 

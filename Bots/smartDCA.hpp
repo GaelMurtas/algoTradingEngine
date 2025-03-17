@@ -9,10 +9,28 @@ class SmartDCA : public TradingBot{
           //moyenne et volatilité en porcentage sur les dernières bougie
           double meanReturn;
           double volReturn;
-          //gain minimal et maximal actepté pour clore une position (en postion en porcentage)
-          double nimGain;
-          double maxGain;
+          //1 if a buy order is alredy pending
+          bool pendingBuyOrder;
+          //keep track of the actual lot in the dca position
+          double actualLot;
+          //keep track the mean entree point
+          double meanEntree;
 
-     template<Event event> void onEvent();
+          //we want to buy under the last price of a small factor
+          //it will multipli the volatility to take it in account (en pourcentage)
+          static inline const double discountFactor = 10;
+          //gain minimal et maximal actepté pour clore une position (en postion en porcentage)
+          static inline const double minGain = 5;
+          //Inutilisé pour moment on gérera l'adaption dinamique plus tard
+          static inline const double maxGain = 10;
+          //lot de base utilisé pour chaque achat
+          static inline const double baseLot = 1;
+
+     public:
+          template<Event event, class ... types> void onEvent(const types & ...);
+
+          //buy and sellPrices calculation based on last candles
+          double buyPrice();
+          double sellPrice();
 };
 
