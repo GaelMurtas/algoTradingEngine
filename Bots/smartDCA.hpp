@@ -4,7 +4,6 @@
 
 class SmartDCA : public TradingBot{
      //ici on a besoin de transmetre le type d'ordre et la quantité en pourcentage du montant total du compte
-     using TradingBot::TradingBot;
      private :
           //moyenne et volatilité en porcentage sur les dernières bougie
           double meanReturn;
@@ -27,6 +26,7 @@ class SmartDCA : public TradingBot{
           static inline const double baseLot = 1;
 
      public:
+          SmartDCA(const std::string&, TimeFrame);
           template<Event event, class ... types> void onEvent(const types & ...);
 
           //buy and sellPrices calculation based on last candles

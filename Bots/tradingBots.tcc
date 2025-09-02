@@ -28,6 +28,12 @@ DefaultSignal<real, bot>::DefaultSignal(const Signal<real, bot, bool, double, do
      std::get<2>(*this) = std::get<2>(sig);
 }
 
+template<bool real, tradingAlgorithme bot>
+void DefaultSignal<real, bot>::print(){
+     using namespace std;
+     cout << "Signal Contant : type - " << getType() << ", lot - " << getLot() << ", price - " << getPrice() << endl;
+}
+
 /*
  * EnevtScan
  */
@@ -99,9 +105,9 @@ template<tradingAlgorithme botType>
 void Metrics<botType>::print(){
      using namespace std;
      cout << "\n- - - - - - - - - - \nObserved Metrics value :\n- - - - - - - - - -\n Total gain: " <<
-          get<0>(*this) << endl <<
+          this->getGain() << endl <<
           " Max drowdawn: " <<
-          get<1>(*this) << endl
+          this->getDrawdown() << endl
           << "- - - - - - - - - -\n";
 }
 
@@ -124,6 +130,7 @@ TrainingEnvironment<botType>::TrainingEnvironment(const std::string & path, cons
 template<tradingAlgorithme botType>
 void TrainingEnvironment<botType>::launchTraining(){
      for(;tracker < size(); ++tracker){
+          std::cout<< "Tracker : "  << tracker << std::endl;
           readCandle();
           passOrders();
      }
@@ -137,6 +144,7 @@ void TrainingEnvironment<botType>::readCandle(){
 
 template<tradingAlgorithme botType>
 void TrainingEnvironment<botType>::passOrders(){
+     if(openOrders.size()>0){//A FAIRE: Arranger l'itérateur pour ne plus avoir besoin de cette ligne
      for(auto order : this->openOrders){
           if(std::get<0>(order) && (std::get<2>(order) >= getConst(tracker).low)){//buy case
           trainedBot->template onEvent<Event::successfullBought>();
@@ -152,7 +160,7 @@ void TrainingEnvironment<botType>::passOrders(){
      this->getGain() = std::max(this->getGain(), this->getCapital() - this->baseCapital);
      //A FAIRE: CALCUL FAUX METRE LA BONNE FORMULE
      this->getDrawdown() = std::min(this->getDrawdown(),  this->getGain());
-}
+}}
 
 template<tradingAlgorithme botType>
 void TrainingEnvironment<botType>::placeOrder(const signal<0, botType> & sig){
@@ -168,4 +176,13 @@ void TrainingEnvironment<botType>::removeOrder(const signal<0, botType> & order)
           }
      }
      openOrders = tmp;
+}
+
+template<tradingAlgorithme botType>
+void TrainingEnvironment<botType>::printOpenOrders(){
+     std::cout << "OpenOrders :\n";
+     if(openOrders.size()>0){//A FAIRE: arranger l'itérateur pour éviter cette ligne
+     for(auto sig :  openOrders){
+          sig.print();
+     }}
 }

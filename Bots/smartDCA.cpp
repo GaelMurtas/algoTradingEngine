@@ -7,8 +7,9 @@
 #include "tradingBots.tcc"
 #include "smartDCA.tcc"
 
-//initialisation de membres statique
-//TrainingEnvironment<SmartDCA>::getInstance() = NULL;
+SmartDCA::SmartDCA(const std::string & path, TimeFrame tf):
+     pendingBuyOrder(false), TradingBot(path, tf){
+}
 
 double SmartDCA::buyPrice(){
      return last().close * (1-(discountFactor*volReturn/10000));

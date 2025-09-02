@@ -121,6 +121,9 @@ class DefaultSignal : public Signal<real, bot, bool, double, double>{
                return get<2>(*this);
           }
 
+          //simple print for debug
+          void print();
+
      //to alow motherclass convertion
      DefaultSignal(const Signal<real, bot, bool, double, double> &);
 };
@@ -222,6 +225,9 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
           //A FAIRE erreur si l'instance est NULL 
           return instance;
      }
+     
+     //simple print for debug
+     void printOpenOrders();
 
      //A FAIRE: on peut utiliser une déclaration d'amitier avec template pour incuretous les type de signaux
      friend class Signal<0, botType,  bool, double, double>;

@@ -34,20 +34,34 @@ template<> void SmartDCA::onEvent<Event::newCandle>(){
      }
 
 template<> void SmartDCA::onEvent<Event::newCandle, Bougie>(const Bougie & cand){
+     std::cout << "new Candle detected:\n";
+     cand.affiche();
          *this + cand;
          meanReturn = 100 * (_mean(returns())) / mean(_length);
          volReturn = 100 * (_sd(returns())) / mean(_length);
+         std::cout << "Stats : mean - "  << meanReturn << " vol - " << volReturn << std::endl;
          if(!pendingBuyOrder){
                signalSmartDCA buy(true, baseLot, buyPrice());
+               std::cout <<  "buy order : lot - " << baseLot << " price - " << buyPrice() << std::endl;
+               pendingBuyOrder == true;
                //A FAIRE: pas toujours nécessais on peut accéléré l'algo en sautant ce calcul dans ceratin cas
-               signalSmartDCA sell(false, actualLot, sellPrice());
-         }
+               if(actualLot >= baseLot){
+                    signalSmartDCA sell(false, actualLot, sellPrice());
+                    std::cout <<  "Sell order : lot - " << actualLot << " price - " << sellPrice() << std::endl;
+               }
+               getSmartDCAtrainer().printOpenOrders();
+          }
      }
 
 template <>
 void SmartDCA::onEvent<Event::successfullBought>(){
+     std::cout << "Achat effectuer sur la bougie : \n";
+     last().affiche();
+     pendingBuyOrder = false;
 }
 
 template <>
 void SmartDCA::onEvent<Event::successfullSold>(){
+     std::cout << "vente effectuer sur la bougie : \n";
+     last().affiche();
 }

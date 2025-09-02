@@ -148,8 +148,9 @@ int main(){
     
      //SmartDCA test
      TimeFrame tf(1,TimeUnit::h);
-     SmartDCA dca("./Donnée/testHeston", tf);
-     TrainingEnvironment<SmartDCA> TE("./Donnée/testHeston", tf, dca);
+     SmartDCA dca("./Donnée/empty", tf);
+     TrainingEnvironment<SmartDCA> TE("./Donnée/testStocReturn", tf, dca);
+     TE.launchTraining();
      return 0;
 }
 

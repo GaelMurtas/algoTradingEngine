@@ -11,7 +11,7 @@ Chart::Chart(const Table & ntab, const TimeFrame & tf): tabExt<Bougie>::TabExt(n
     time = tf;
     for(size_t i=1; i<=ntab.nLines(); i++){
         Bougie B(stod(ntab.getCopie(i,1)),stod(ntab.getCopie(i,2)),stod(ntab.getCopie(i,3)),stod(ntab.getCopie(i,4)));
-        get(i) = B;
+        get1(i) = B;
     }
 }
 
