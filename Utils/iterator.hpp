@@ -45,7 +45,8 @@ class Iterator
      }
 
      Iterator(structRef obj, size_t index): current(index), object(&obj){
-         tabException::indexCheck(this->object, std::source_location::current(), object->size(), current);
+         tabException::indexCheck(this->object, std::source_location::current(), object->size()+1, current);
+         //+1 cause we need a bit of room to match with evry type of object, specialy for "end" functions.
      }
 
      //accesseurs

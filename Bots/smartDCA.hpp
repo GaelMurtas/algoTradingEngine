@@ -8,8 +8,8 @@ class SmartDCA : public TradingBot{
           //moyenne et volatilité en porcentage sur les dernières bougie
           double meanReturn;
           double volReturn;
-          //1 if a buy order is alredy pending
-          bool pendingBuyOrder;
+          //1 if a buy order is alredy pending    TJ NECESSAIRE ?
+          //bool pendingBuyOrder;
           //keep track of the actual lot in the dca position
           double actualLot;
           //keep track the mean entree point
@@ -17,9 +17,9 @@ class SmartDCA : public TradingBot{
 
           //we want to buy under the last price of a small factor
           //it will multipli the volatility to take it in account (en pourcentage)
-          static inline const double discountFactor = 10;
+          static inline const double discountFactor = 50;
           //gain minimal et maximal actepté pour clore une position (en postion en porcentage)
-          static inline const double minGain = 5;
+          static inline const double minGain = 0.5;
           //Inutilisé pour moment on gérera l'adaption dinamique plus tard
           static inline const double maxGain = 10;
           //lot de base utilisé pour chaque achat
@@ -34,3 +34,8 @@ class SmartDCA : public TradingBot{
           double sellPrice();
 };
 
+//specialisation for smart dca signal map
+template<>
+struct signalMap<SmartDCA>{
+     typedef UniqueOrder<REAL_TRADING, SmartDCA> TYPE;
+};

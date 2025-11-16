@@ -15,6 +15,29 @@
  #ifndef REAL_TRADING
  #define REAL_TRADING 0
 
+//activation des exceptions spécifique à cette bibliothèque
+#define TRADINGBOTS_EXCEPTION 1
+
+//Option permettant de suivre l'ordre d'appel des fonctions dans le programme
+//utilisé pour débugage
+ #define TRADINGBOTS_DEBUG 0
+ #if TRADINGBOTS_DEBUG
+ #define FUNCTION_FOLLOW() functionFollow(std::source_location::current());
+ #else
+ #define FUNCTION_FOLLOW() emptyFunction();
+ #endif
+ 
+//mettre cette fonction dans bibliothèque utils
+inline void functionFollow(const auto location){
+	std::cout << "function `" << location.function_name()
+              << "` form file `" << location.file_name() << " (line - "
+              << location.line() << ")`"
+              << " called\n";
+}
+
+inline void emptyFunction(){
+}
+
 //Les différents événements qui nécessite une réaction de la part d'un bot de trading
 enum class Event{
      newCandle, successfullBought, successfullSold
@@ -85,51 +108,85 @@ class EventScan{
      void scan();
 };
 
-//le concept de tradingAlgorithme représente les différent types de trading bot
-template <class T>
-concept tradingAlgorithme = std::is_base_of<TradingBot, T>::value;
-
 /* 
  * Object représentant le trade final que l'on souhaite passer à un instant t.
  * Le premiers argument du template représente si le signal doit être exécuter en réel
  * ou bien si il est exécuter sur les données d'entrainement.
  * Les autres arguments sont pour le contenu du signal qui diffère en fonction des algos
  */
-template<bool real, tradingAlgorithme bot, class ... args>
-class Signal : public std::tuple<args ...>{
+
+///le concept de tradidingBot_type représente les différent types de trading bot
+template <class T>
+concept tradidingBot_type = std::is_base_of<TradingBot, T>::value;
+
+//empty Class use for concepts and gerericity proposes
+class iSignal{
+};
+
+//to later use any trading signal as template parameter
+template <class T>
+concept signal_type = std::is_base_of<iSignal, T>::value;
+
+//main tradibg signal class, the generic one
+template<bool real, tradidingBot_type bot, class ... args>
+class Signal : public std::tuple<args ...>, iSignal{
      public :
           Signal();
           Signal(args ...);
      private :
           //fonction d'envoi du signal appeller automatique à la construction
-          void send();
+          //static to be able to use in constructor
+          static void send(Signal<real, bot, args ...>);
 };
 
-//contenu du signal par défault il sera spécialiser si besoin dans les boliothèque de spécialisation de chaque bot
+//To differenciate the buy and the sell signal
+enum class orderType{
+     buy, sell
+};
+
+//basic limit order, could be used by many trading bots
 //long ou short, quantity, price
-template<bool real, tradingAlgorithme bot>
-class DefaultSignal : public Signal<real, bot, bool, double, double>{
-     using Signal<real, bot, bool, double, double>::Signal;
+template<bool real, tradidingBot_type bot>
+class LimitOrder : public Signal<real, bot, orderType, double, double>{
+     using Signal<real, bot, orderType, double, double>::Signal;
      public:
-          bool getType(){//true for buy false for sell
+          orderType getType() const{//true for buy false for sell
                return get<0>(*this);
           }
-          bool getLot(){//true for buy false for sell
+          double getLot() const{//true for buy false for sell
                return get<1>(*this);
           }
-          bool getPrice(){//true for buy false for sell
+          double getPrice()const {//true for buy false for sell
                return get<2>(*this);
           }
 
           //simple print for debug
-          void print();
+          void print() const;
 
      //to alow motherclass convertion
-     DefaultSignal(const Signal<real, bot, bool, double, double> &);
+     LimitOrder(const Signal<real, bot, orderType, double, double> &);
 };
 
-template<bool real, tradingAlgorithme bot>
-using signal = DefaultSignal<real, bot>;
+//Limit order but we ensure to be unique
+//it can be only one order of the same type in the eatch trading bot in a given market
+template<bool real, tradidingBot_type bot>
+class UniqueOrder : public LimitOrder<real, bot>{
+     using LimitOrder<real, bot>::LimitOrder;
+     public:
+          //we redifind the send to automaticly remove older order when a new one is sending.
+          static void send(UniqueOrder<real, bot>);
+};
+
+//alias to map the corret signal type to eatch trading bot type
+//default comportent useless, made to use only the spesialisation
+//spesialisation define in eatch trading bots own library
+template<tradidingBot_type bot>
+struct signalMap{
+     //here we put a "typedef" - the choosen type - "TYPE" in the specialisation of this struct
+};
+//alias to use
+template<tradidingBot_type bot>
+using SignalMap = signalMap<bot>::TYPE;
 
 
 
@@ -161,23 +218,41 @@ class BotsHandler : public BotsHandlerInterface{
  * Pour chaque algorithme on aura des métriques bien précises à traker
  * Ainsi nous pourons meusure les performances
  * On définit ici des métriques par défault mais chaque algo peut les redéfinir par un spécialisation
- * capital, total gain et max drawdown
+ * capital : solde actuel du compte en dollards
+ * total gain : total de tous les gains et pertes engendré par le bot de trading
+ * min capital : le plus bas enregister des réserves en dollards du compte
  */
-template<tradingAlgorithme bot>
+template<tradidingBot_type bot>
 class Metrics : std::tuple<double, double, double>{
      using std::tuple<double, double, double>::tuple;
      public:
-     void print();
-     static constexpr double baseCapital = 10000;
+     void print() const;
+     static constexpr double baseCapital = 1000000;
+     
+     //metrics base accessors
+     double getCopieCapital() const{
+         return std::get<0>(*this);
+     }
+     double getCopieGain() const{
+         return std::get<1>(*this);
+     }
+     double getCopieMinCapital() const{
+         return std::get<2>(*this);
+     }
 
-     //metrics base accors
+     //to enter expenses or earnings after eatch successfull trade
+     //capital, total gain & min captial automaticly compute
+     void cashFlow(const double &);
+
+     protected:
+     //metrics reference accessors
      double& getCapital(){
          return std::get<0>(*this);
      }
      double& getGain(){
          return std::get<1>(*this);
      }
-     double& getDrawdown(){
+     double& getMinCapital(){
          return std::get<2>(*this);
      }
 };
@@ -190,8 +265,8 @@ class Metrics : std::tuple<double, double, double>{
  * A FAIRE: prévoir la possibilité d'entrainer sur plusieurs jeux de données en parallèles
  *          Avoir un vrais singleton, ici on peut avoir autant d'instance différente que de "botType" différents
  */
-template<tradingAlgorithme botType>
-class TrainingEnvironment : private Chart, Metrics<botType>{
+template<tradidingBot_type botType>
+class TrainingEnvironment : private Chart, public Metrics<botType>{
      private:
           //in order to insure that we keep a unique TrainingEnvironment at the time
           static inline TrainingEnvironment<botType>* instance;
@@ -200,7 +275,7 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
           //the actual instant of the algo trained
           botType* trainedBot;
           //keep in memory the ordders still open
-          tabExt<signal<0, botType>> openOrders;
+          tabExt<SignalMap<botType>> openOrders;
 
           //reading a new candel and transmit to algo
           void readCandle();
@@ -208,10 +283,7 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
           //we also upgrade the metrics here
           void passOrders();
           //we place the order given by the signal sending the trading bot
-          //usely done at the signal creation
-          void placeOrder(const signal<0, botType> &);
-          //remove un order, use to cancel one or if successfull passed
-          void removeOrder(const signal<0, botType> &);
+          
 
      public:
      //like for a chart we create from a dataPath
@@ -220,18 +292,26 @@ class TrainingEnvironment : private Chart, Metrics<botType>{
      //lanch the training of the trading bot and print us the results
      void launchTraining();
 
+     //usely done at the signal creation
+     void placeOrder(const SignalMap<botType> &);
+     //remove un order, use to cancel one or if successfull passed or replace for a new one.
+     void removeOrder(const SignalMap<botType> &);
+     //remove all orders at once
+     void removeOrders();
+
      //accessor
      static TrainingEnvironment* getInstance(){
-          //A FAIRE erreur si l'instance est NULL 
+          UnexpectedEmptyPointer<TRADINGBOTS_EXCEPTION, TrainingEnvironment>::check(std::source_location::current(), instance);
           return instance;
      }
      
+     static tabExt<SignalMap<botType>> & getOpenOrders(){
+          return getInstance()->openOrders;
+     }
      //simple print for debug
      void printOpenOrders();
 
-     //A FAIRE: on peut utiliser une déclaration d'amitier avec template pour incuretous les type de signaux
-     friend class Signal<0, botType,  bool, double, double>;
-     friend class DefaultSignal<0, botType>;
+     friend SignalMap<botType>;
 };
 
 #endif

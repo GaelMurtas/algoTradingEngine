@@ -1,5 +1,5 @@
 CC = g++
-flags = -W -std=c++20 -lpthread -O2
+flags = -W -std=c++20 -lpthread -O2 -g
 
 headers = Exception/exception.h Utils/utils.h Trading/trading.h Simulation/simulation.h
 

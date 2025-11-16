@@ -154,6 +154,30 @@ class SuspectInputs<false, valuesTypes ...> : private Exception{
      }
 };
 
+//exception pour tester la validitée des pointeurs
+template<bool activateException, typename ptrType>
+class UnexpectedEmptyPointer : private Exception{
+     using Exception::Exception;
+     public:
+     static inline void check(std::source_location location, ptrType * ptr){
+          if(BYPASS) return;
+          if(!ptr){
+               UnexpectedEmptyPointer e(ptr, location, ExceptionType::fatal_error);
+               e.message = "Pointeur null inattsndu détecté.";
+               e.affiche();
+               if(Exception::THROW) throw e;
+               else exit(-1);
+          }
+     }
+};
+template<typename ptrType>
+class UnexpectedEmptyPointer<false, ptrType> : private Exception{
+     using Exception::Exception;
+     public:
+     static inline void check(std::source_location location, ptrType * ptr){
+     }
+};
+
 //Pour les prochaine exception tenter de tout faire en inline dans ce fichier sans définir de constructeur en utilisant directement le constructeur de la clase mêre et en faisant une fonction membre statique à la place de la fonction Check 
 //pour voir si ça fait moins de code à écrire et si ça reste clair
 

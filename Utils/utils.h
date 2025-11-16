@@ -106,12 +106,12 @@ class Tab{
 
       iterator end(){
            //astuce pour renvoyer un itérateur à la position juste après la fin du tableau en exciquant la détection d'erreur du construcetur
-          return ++iterator(*this, length-1);
+          return iterator(*this, length);
       }
 
       constIterator end() const{
            //astuce pour renvoyer un itérateur à la position juste après la fin du tableau en exciquant la détection d'erreur du construcetur
-          return ++constIterator(*this, length-1);
+          return constIterator(*this, length);
       }
 };
 
