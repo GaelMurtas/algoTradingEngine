@@ -79,6 +79,8 @@ class Tab{
       //autres utilitaires
       //sipression d'un élément O(n)
       void remove(const size_t &);
+      //suppression de l'intgralité du tableau, seul les éléments sont supprimer, la mémoire est toujours alloué
+      void clear();
       //fonction pour obtenir une valeur minimale (ou maximale) du tableau si T est l'un des type numérique prévu pour être utiliser avec cette fonction
       //c'est bien UNE valeur minimale et non pas LA valeur minimale car < peut ne pas être un ordre parfait
       T min() const;

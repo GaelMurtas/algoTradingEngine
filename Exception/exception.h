@@ -160,33 +160,20 @@ class UnexpectedEmptyPointer : private Exception{
      using Exception::Exception;
      public:
      static inline void check(std::source_location location, ptrType * ptr){
-          if(BYPASS) return;
-          if(!ptr){
+          if constexpr (activateException == 1){
+               if(BYPASS || ptr) return;
                UnexpectedEmptyPointer e(ptr, location, ExceptionType::fatal_error);
-               e.message = "Pointeur null inattsndu détecté.";
+               e.message = "Pointeur null inattendu détecté.";
                e.affiche();
                if(Exception::THROW) throw e;
                else exit(-1);
           }
      }
 };
-template<typename ptrType>
-class UnexpectedEmptyPointer<false, ptrType> : private Exception{
-     using Exception::Exception;
-     public:
-     static inline void check(std::source_location location, ptrType * ptr){
-     }
-};
-
-//Pour les prochaine exception tenter de tout faire en inline dans ce fichier sans définir de constructeur en utilisant directement le constructeur de la clase mêre et en faisant une fonction membre statique à la place de la fonction Check 
-//pour voir si ça fait moins de code à écrire et si ça reste clair
-
-
-//faire spécialisation pour cas activate exception == false au niveau général(trouver solution pour ne pas avoir à faire cette spécialisation à chaque Fois     
-//faire spé pour location == Histogram::getClasse afin de retourner classe()
 
 /*
  * les différentes exceptions du programme
+ * a mettre a jour dans le style de la gestion d'exceptions amélioré ci-dessus
  */
 class IndexOutOfRange : public Exception{
     friend void tabException::indexCheck(const void*, const std::source_location &, size_t, size_t);

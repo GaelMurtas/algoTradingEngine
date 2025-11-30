@@ -20,17 +20,18 @@
 
 ## File Naming and Structure
 
--   **`.h` --- General Header**\
+-   **`.hpp` --- General Header with class definition**\
+    Contains class definitions comented\
+    function and other utilies for related classes may be present.
+
+
+-   **`.hh` --- Compile time and others utilities**\
     Contains:
-
-    -   Preprocessor directives (`#include`, macro constants, etc.)\
+    -   Preprocessor directives (macro constants, etc.)\
     -   Meta-programming utilities (aliases, concepts, traits, global
-        variables)
-
--   **`.hpp` --- Class Definitions**\
-    Contains class definitions.\
-    If a class does not have its own `.hpp`, its definition is placed in
-    the corresponding `.h`.
+        variables)\
+    -   Contexpre and utility functions\
+    usely included from a ".hpp", if theres  any ".hh" in the folder see in ".hpp".
 
 -   **`.tcc` --- Generic Template Implementations**\
     Contains non-specialized template implementations.

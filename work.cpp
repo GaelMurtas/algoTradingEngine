@@ -1,7 +1,7 @@
 #include "Exception/exception.h"
 #include "Trading/trading.h"
 #include "Utils/utils.h"
-#include "Bots/tradingBots.h"
+#include "Bots/tradingBots.hpp"
 #include "Bots/smartDCA.hpp"
 #include "Math/math.h"
 //#include "Math/math.ipp"
@@ -50,11 +50,24 @@ int main(){
      tab.remove(3);
      cout << endl << "Result : " << tab.getCopie(3) << endl;
      cout << endl << "Taille aloué : " << tab.allocSize() << endl;
+     tab.clear();
+     //cout << endl << "Result : " << tab.getCopie(3) << endl;
+     tab.pushBack("r");
+     cout << endl << "Result : " << tab.getCopie(0) << endl;
 
      //test de TabExt et de son itérateur
      tabExt<size_t> tabTest;
      for(size_t i =0; i<20;  ++i){
           tabTest.pushBack(i*2);
+     }
+     for(auto x: tabTest){
+          cout << "Element :" << x << endl;
+     }
+     //test fonc clear
+     cout << endl;
+     tabTest.clear();
+     for(size_t i =0; i<10;  ++i){
+          tabTest.pushBack(i*3);
      }
      for(auto x: tabTest){
           cout << "Element :" << x << endl;
@@ -148,8 +161,8 @@ int main(){
     
      //SmartDCA test
      TimeFrame tf(1,TimeUnit::h);
-     SmartDCA dca("./Donnée/empty", tf);
-     TrainingEnvironment<SmartDCA> TE("./Donnée/testStocReturnShort", tf, dca);
+     smartDCA dca("./Donnée/empty", tf);
+     trainingEnvironment<smartDCA> TE("./Donnée/testStocReturnShort", tf, dca);
      TE.launchTraining();
      return 0;
 }

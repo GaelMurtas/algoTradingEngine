@@ -1,8 +1,12 @@
 /**********
- ********** BIBLIOTHEQUE DE SPECIALISATION POUR LE BOT DE TRADING SMARTDCA
+ ********** SMARTDCA TRADING BOT SPECIFIC CLASS DECRARATIONS
  **********/
 
-class SmartDCA : public TradingBot{
+/*
+ * class of the smart dca trading TradingBot
+ * it's a tradingBot class decedent
+ */
+class smartDCA : public tradingBot{
      //ici on a besoin de transmetre le type d'ordre et la quantité en pourcentage du montant total du compte
      private :
           //moyenne et volatilité en porcentage sur les dernières bougie
@@ -26,16 +30,13 @@ class SmartDCA : public TradingBot{
           static inline const double baseLot = 1;
 
      public:
-          SmartDCA(const std::string&, TimeFrame);
-          template<Event event, class ... types> void onEvent(const types & ...);
+          smartDCA(const std::string&, TimeFrame);
+          template<event evn, class ... types> void onEvent(const types & ...);
 
           //buy and sellPrices calculation based on last candles
           double buyPrice();
           double sellPrice();
 };
 
-//specialisation for smart dca signal map
-template<>
-struct signalMap<SmartDCA>{
-     typedef UniqueOrder<REAL_TRADING, SmartDCA> TYPE;
-};
+#include "smartDCA.hh"
+

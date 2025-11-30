@@ -28,6 +28,13 @@ template<typename T> void Tab<T>::remove(const size_t & e){
   }
 }
 
+template<typename T> void Tab<T>::clear(){
+    for(size_t i=0;i<length;i++){
+      data[i]= T();
+    }
+    length = 0;
+}
+
 template<typename T> T Tab<T>::min() const {
     T min = data[0];
     for(size_t i = 1; i < length; ++i){
