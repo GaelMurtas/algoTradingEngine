@@ -27,10 +27,11 @@
 
 -   **`.hh` --- Compile time and others utilities**\
     Contains:
-    -   Preprocessor directives (macro constants, etc.)\
+    -   Preprocessor directives (macro constants, etc.)
     -   Meta-programming utilities (aliases, concepts, traits, global
-        variables)\
-    -   Contexpre and utility functions\
+        variables)
+    -   Contexpre and utility functions
+
     usely included from a ".hpp", if theres  any ".hh" in the folder see in ".hpp".
 
 -   **`.tcc` --- Generic Template Implementations**\
