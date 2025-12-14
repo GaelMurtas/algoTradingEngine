@@ -127,29 +127,51 @@ class eventScan{
 
 
 /*
- * Class responsible for managing multiple trading bots simultaneously.
- * Its role includes launching and maintaining each algorithm’s event scans
- * in separate threads.
- * The singleton pattern is also used here.
+ * Class responsible to the real trading algorithms worklow
+ * for algo we allow communication with the correct file to transmit order and react to event.
+ * it's able to managing multiple trading bots simultaneously.
+ * Its role includes launching and maintaining each algorithm’s event scans and execution in separate threads.
  */
+
+//The singleton pattern is used here at interface level
+//it's because we don't want multiple botsHandler even for different work 
+//we prefer manage all bots in a unique instance
+//
 //TEMPORAIRE : on ne sait pas encore la structure du disaign de cette partie
-class botsHandlerInterface{
+class iBotsHandler{
      public:
      //lancement de la détection d'évéments et donc des différents algorithmes
      static void launch();
 
      private:
-     static botsHandlerInterface* instance;
-     botsHandlerInterface() = delete;
+     static iBotsHandler* instance;
+     iBotsHandler() = delete;
 };
 
+//BotsHandeler main class
+//heritate from 'BotCommunicationWays' witch is an alias for an array the 'botCommunicationWay' of eatch bot.
 template<tradingBot* ... bots>
-class botsHandler : public botsHandlerInterface{
+class botsHandler : public iBotsHandler, public BotCommunicationWays<bots ...>{
      public :
      static void launch();
 
      private :
      botsHandler();
+};
+
+//class to ensure comunication bettewn itch bot and correct file
+//use only for real trading
+//Peut-être a mettre en template paramétré par 'botType' si certaines spésembles nécessaire
+class botCommunicationWay{
+     public:
+          const tradingBot * adrBot;
+          const std::string dataPath, eventPath, orderPath;
+
+     //open and verify access to file in constructor
+     botCommunicationWay();
+
+     //close all files
+     ~botCommunicationWay();
 };
 
 

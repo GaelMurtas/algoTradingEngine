@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "../Trading/trading.h"
 #include "../Math/math.h"
+#include "../meta/meta.hh"
 
  //variable servant à activer le tarding réel ou à a compiler la versio d'entrainement
  #define REAL_TRADING 0
@@ -73,6 +74,45 @@ struct signalMap{
 template<tradidingBot_type bot>
 using SignalMap = signalMap<bot>::TYPE;
 
+/*
+ * botHandler meta programming specific stuff
+ * we need to transform a collection of bots in a colletion of communicatinWay
+ * one for eatch bot
+ */ 
+/*
+//general case for recurrence
+//index vraiment urile ?
+template<int index, tradingBot* bot1, tradingBot* ... bots, botCommunicationWay ... ways>
+struct botCommunicationWays_impl{
+     typedef botCommunicationWays_impl<index-1, botCommunicationWay ... ways, botCommunicationWay<bot1>, bots ...>::TYPE TYPE;
+}
+
+//for the first call evry computation still to do
+//spé vraiment utile ?
+template<int index, tradingBot* bot1, tradingBot* ... bots>
+struct botCommunicationWays_impl<bot1, bots ... , index>{
+     typedef botCommunicationWays_impl<index-1, botCommunicationWay<bot1>, bots ...>::TYPE TYPE;
+}
+
+//base case all communicatinWay are computed
+template<botCommunicationWay ... ways>
+struct botCommunicationWays_impl<ways ..., 0>{
+     typedef std::tuple<ways ...> TYPE;
+}
+*/
+
+
+/*
+ * alias used for inheritance in botHandler
+ */
+
+class botCommunicationWay;
+
+template<tradingBot* ... bots>
+using BotCommunicationWays = std::array<botCommunicationWay, nbTemplateArgs<bots ...>>;
+
+
+
 
 //Others utilities
 //mettre cette fonction dans bibliothèque utils
@@ -82,6 +122,4 @@ inline void functionFollow(const auto location){
               << location.line() << ")`"
               << " called\n";
 }
-//mettre dans meta prog library
-inline void emptyFunction(){
-}
+
