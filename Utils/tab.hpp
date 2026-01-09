@@ -77,7 +77,7 @@ template<typename T> void Tab<T>::operator = (const Tab& tab){
 template<typename T> void Tab<T>::operator +=(const Tab& tab){
     size_t oldLength = length;
     T* oldData = data;
-    length += tab.lenth;
+    length += tab.length;
     data = new T[length];
     size_t i = 0;
     for (; i < oldLength; i++){
