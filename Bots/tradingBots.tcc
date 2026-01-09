@@ -75,22 +75,12 @@ void uniqueOrder<real, bot>::send(uniqueOrder<real, bot> order){
 }
 
 /*
- * EnevtScan
+ * fileWatecher
  */
 
-template<tradingBot* bot>
-void eventScan<bot>::launch(){
-          FUNCTION_FOLLOW()
-     if(!instance) instance = new eventScan();
-     instance->scan();
-}
+//S'INSPIRER DE CETTE IMPLEMANTATION POUR FAIRE CELLE DE FILEWATCHER
 
-template<tradingBot* bot>
-eventScan<bot>::~eventScan(){
-          FUNCTION_FOLLOW()
-     delete instance;
-}
-
+/*
 template<tradingBot* bot>
 event eventScan<bot>::eventMap(const string & str){
      for(char c : str){
@@ -120,12 +110,18 @@ void eventScan<bot>::scan(){
      }
      std::this_thread::sleep_for(std::chrono::seconds(time));
 }
+*/
+
+/*
+ * BotCommunicationWay
+ */
+
 
 /*
  * BotsHandler
  */
 
-template<tradingBot* ... bots>
+/*template<tradingBot* ... bots>
 void botsHandler<bots ...>::launch(){
           FUNCTION_FOLLOW()
      if(instance){
@@ -140,7 +136,7 @@ void botsHandler<bots ...>::launch(){
           jthread tmp(eventScan<&std::get<i>(botList)>::scan);
           threadVect.push_back(tmp);
      }
-}
+}*/
 
 /*
  * Metrics default comportement

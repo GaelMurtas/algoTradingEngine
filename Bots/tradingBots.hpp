@@ -101,78 +101,142 @@ class uniqueOrder : public limitOrder<real, bot>{
 
 
 
-template<tradingBot* bot>
-class eventScan{
-     public:
-     //on lance la détection d'events
-     static void launch();
-
-     private:
-     //fichier a scaner en continue, on regarde le fichier jusqu'à détecter le code d'un event
-     static const std::string path;
-     //ici on veut un signlon car on ne souhaite pas que plusieurs gestionaire d'events puisse exister sur le mm algo
-     static eventScan* instance;
-     //condient de temps attende avant de revérifier le fichier en seconde
-     inline static const double time = 10;
-
-     eventScan();
-     ~eventScan();
-
-     //renvoie l'évent correspondant au code
-     static event eventMap(const std::string &);
-     //lance la boucle infini de scan de fichier
-     void scan();
-};
-
-
-
 /*
- * Class responsible to the real trading algorithms worklow
+ * Classes responsible to the real trading algorithms workflow
  * for algo we allow communication with the correct file to transmit order and react to event.
  * it's able to managing multiple trading bots simultaneously.
  * Its role includes launching and maintaining each algorithm’s event scans and execution in separate threads.
  */
 
-//The singleton pattern is used here at interface level
-//it's because we don't want multiple botsHandler even for different work 
-//we prefer manage all bots in a unique instance
-//
-//TEMPORAIRE : on ne sait pas encore la structure du disaign de cette partie
-class iBotsHandler{
+//class to save the current state of trading activiti
+//for real trading bots need to have acces to trading history
+//for instance the adverage adverage price of buying, current positions in the market ...
+//template<tradidingBot_type botType> voir plus tard si necessaire
+class tradingState{
+     private:
+     double initialCapital;
+     double currentCapital;
+     //positions encode as a pair 1-entry price 2-entry size (negative if short)
+     //A FAIRE: faire une classe position générale qui permet d'avoir plus infos
+     //nombres d'entrées, valeurs actuelles de la position, date d'entrées ...
+     std::pair<double, double> currentPosition;
+     //no need to save the state of current open order cause it's save in a specific order file
+
+     public :
+     tradingState(const std::string & path);
+     ~tradingState();
+     //accessors
+     const double & getItitCap() const{
+          return initialCapital;
+     }
+     double & getCap(){
+          return currentCapital;
+     }
+     std::pair<double, double> getPos(){
+          return currentPosition;
+     }
+};
+
+
+//class to ensure comunication bettewn itch bot and corrects files
+//use only for real trading
+template<tradidingBot_type botType>
+class botCommunicationWay{
      public:
-     //lancement de la détection d'évéments et donc des différents algorithmes
+          //the trading bot witch comunicatitate via this instance
+          const tradingBot * adrBot;
+          //the path of communication files
+          const std::string dataPath, eventPath, orderPath, satePath;
+
+          //open and verify access to file in constructor
+          //also charge existing file in memory
+          botCommunicationWay();
+
+          //close all files
+          ~botCommunicationWay();
+
+          //actual function use by over class to allow comunication between the bots and the files
+          void addOrder(const SignalMap<botType> &);
+          void addEvent(const event &);
+          void writeState(const tradingState &);
+          event getLastEvent();
+          Bougie getLastCandel();
+          tradingState getState();
+
+     private:
+          //contant of comunication file loaded in memory
+          Table dataTable, eventTable, orderTable;
+          //write and read corespond table in files
+          void readOrders();
+          void readEvents();
+          void readState();
+          void writeOreders();
+          void writeEvents();
+          void writeState();
+};
+
+//we weed to wtach out the change in key files for bots to react
+//cette classe peut être utile a un niveau plus générale
+//il faudra peut-être la déplacer dans utils
+class fileWatcher{
+     public:
+     //we build the class form the collection of path to the files to watch
+     fileWatcher(const Tab<std::string>);
+     //pause the thread untill a change in a file is detected
      static void launch();
 
      private:
-     static iBotsHandler* instance;
-     iBotsHandler() = delete;
+     //files to contuinusly fileWatche
+     static const tab<std::string> path;
+     //waiting time in second
+     inline static const double time = 10;
+
+     //lanch infinit loop for a particular file
+     void scan(const std::string & path);
 };
 
-//BotsHandeler main class
-//heritate from 'BotCommunicationWays' witch is an alias for an array the 'botCommunicationWay' of eatch bot.
-template<tradingBot* ... bots>
-class botsHandler : public iBotsHandler, public BotCommunicationWays<bots ...>{
+//class with actual botHandler implementation
+//it's responsible to lanch trading, transmit and load information to the trading algorithm
+//this disaign permit specialisation of the botHandler for certain type of bots if needed
+//iBotHandler is the interface to use to simplify manipulatation of bot for real trading
+template<tradidingBot_type botType>
+class botHandler : public iBotHandler, protected botCommunicationWay<botType>{
+     public :
+          static void launchRealTrading(const botType &);
+          static void stopRealTrading(const botType &);
+
+     private :
+          //load the tradingState to the trading bot 
+          void loadState();
+          //launch scan of file to detect events
+          void launchEventDetection();
+          //transmit the event to tradingBot
+          void processEvent(event);
+          //we writedown the orders receve form the bots
+          void placeOrder(const SignalMap<botType> & order);
+          //for save the actual state at stopping the real trading
+          void saveState();
+
+};
+
+//class to manipulate all bots at once
+//The singleton pattern is used here because we don't want multiple botsHandler even for different work 
+//we prefer manage all bots in a unique instance
+//heritate from 'BotsHandlers' witch is an alias for an array the 'botHandler' of eatch bot.
+//
+//A Faire : Implémenter cette classe dès que la gestion efficce de multiples algorithme en simultanée sera devenu une necessitée
+/*template<tradingBot* ... bots>
+class botsHandler : public BotsHandlers<bots ...>{
      public :
      static void launch();
 
      private :
+     //A Faire : stocker l'instance dans une variable globale
+     //ainsi le sigleton restera efficace malgrès l'utilisation de template
+     //on veux être certain de ne pas avoir plusieurs instances même pour des templates differents
+     static iBotsHandler* instance;
      botsHandler();
-};
-
-//class to ensure comunication bettewn itch bot and correct file
-//use only for real trading
-//Peut-être a mettre en template paramétré par 'botType' si certaines spésembles nécessaire
-class botCommunicationWay{
-     public:
-          const tradingBot * adrBot;
-          const std::string dataPath, eventPath, orderPath;
-
-     //open and verify access to file in constructor
-     botCommunicationWay();
-
-     //close all files
-     ~botCommunicationWay();
-};
+};*/
 
 
 /*

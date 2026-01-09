@@ -33,12 +33,6 @@ class tradingBot;
 template <class T>
 concept tradidingBot_type = std::is_base_of<tradingBot, T>::value;
 
-/*
- * Pour chaque algorithme qui tournera il nous faudra un et un seul EventScan
- */
-template<tradingBot* bot>
-class eventScan;
-
 //Les différents événements qui nécessite une réaction de la part d'un bot de trading
 enum class event{
      newCandle, successfullBought, successfullSold
@@ -106,10 +100,12 @@ struct botCommunicationWays_impl<ways ..., 0>{
  * alias used for inheritance in botHandler
  */
 
-class botCommunicationWay;
+//the iterface for bot botHandler it exist to simplify notations and simtaxes
+class iBotHandler{
+};
 
 template<tradingBot* ... bots>
-using BotCommunicationWays = std::array<botCommunicationWay, nbTemplateArgs<bots ...>>;
+using BotsHandlers = std::array<iBotHandler, nbTemplateArgs<bots ...>>;
 
 
 
