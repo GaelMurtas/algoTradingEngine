@@ -74,6 +74,18 @@ void uniqueOrder<real, bot>::send(uniqueOrder<real, bot> order){
      else OpenOrders()[1] = order;
 }
 
+
+/*
+ * BotCommunicationWay
+ */ 
+
+template<tradidingBot_type botType>
+botCommunicationWay<botType>::botCommunicationWay(const tradingBot & bot, const std::string & data, const std::string & evn, const std::string & order, const std::string & state):
+     adrBot(&bot), dataPath(data), eventPath(evn), orderPath(order), tradingState(state){
+     
+     }
+
+
 /*
  * fileWatecher
  */

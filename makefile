@@ -19,30 +19,26 @@ tradingFile = Trading/tradingAIO.cpp
 tradingIncludes = $(headers) Trading/tradingException.hpp Trading/bougie.cpp Trading/timeFrame.cpp Trading/chart.cpp
 tradingObj = trading.o
 
-botsFile = Bots/smartDCA.cpp
-botsIncludes = Trading/trading.h Bots/tradingBots.h Bots/tradingBots.tcc Bots/smartDCA.hpp
+botsFile = Bots/tradingBots.cpp
+botsIncludes = Trading/tradingBots.hh Bots/tradingBots.hpp Bots/tradingBots.tcc Bots/smartDCA.hpp
 botsObj = bots.o
 
+smartDCAFile = Bots/smartDCA.cpp
+smartDCAIncludes = Bots/tradingBots.hh Bots/tradingBots.hpp Bots/smartDCA.hh Bots/smartDCA.hpp Bots/smartDCA.ipp
+smartDCAObj = smartDCA.o
 
 mainFile = work.cpp
-objs = $(exceptionObj) $(utilsObj) $(mathObj) $(tradingObj) $(simulationObj) $(botsObj)
+objs = $(exceptionObj) $(utilsObj) $(mathObj) $(tradingObj) $(simulationObj) $(botsObj) $(smartDCAObj)
 exe = test
-
 
 all: $(exe) clean execution
 
-$(exe):  $(objs) main.o
+$(exceptionObj) : $(excetionFile)
 	@echo -n
-	@echo edition des liens :
+	@echo compilation de $(exceptionFile):
 	@echo -n "\t"
-	$(CC) -o $@ $(objs) main.o
-
-$(tradingObj) : $(tradingFile)
-	@echo -n
-	@echo compilation de $(tradingFile):
-	@echo -n "\t"
-	$(CC) $(flags) -o $@ -c $(tradingFile)
-$@ : $(tradingIncludes)
+	$(CC) $(flags) -o $@ -c $(exceptionFile)
+$@ : $(exception)
 
 $(utilsObj) : $(utilsFile)
 	@echo -n
@@ -58,6 +54,13 @@ $(mathObj) : $(mathFile)
 	$(CC) $(flags) -o $@ -c $(mathFile)
 $@ : $(mathInclude)
 
+$(tradingObj) : $(tradingFile)
+	@echo -n
+	@echo compilation de $(tradingFile):
+	@echo -n "\t"
+	$(CC) $(flags) -o $@ -c $(tradingFile)
+$@ : $(tradingIncludes)
+
 $(botsObj) : $(botsFile)
 	@echo -n
 	@echo compilation de $(botsFile):
@@ -65,18 +68,24 @@ $(botsObj) : $(botsFile)
 	$(CC) $(flags) -o $@ -c $(botsFile)
 $@ : $(botsInclude)
 
-$(exceptionObj) : $(excetionFile)
+$(smartDCAObj) : $(smartDCAFile)
 	@echo -n
-	@echo compilation de $(exceptionFile):
+	@echo compilation de $(smartDCAFile):
 	@echo -n "\t"
-	$(CC) $(flags) -o $@ -c $(exceptionFile)
-$@ : $(exception)
+	$(CC) $(flags) -o $@ -c $(smartDCAFile)
+$@ : $(smartDCAInclude)
 
 main.o : $(mainFile)
 	@echo -n
 	@echo compilation de $(mainFile):
 	@echo -n "\t"
 	$(CC) $(flags) -o $@ -c $(mainFile)
+
+$(exe):  $(objs) main.o
+	@echo -n
+	@echo edition des liens :
+	@echo -n "\t"
+	$(CC) -o $@ $(objs) main.o
 
 execution:
 	@echo -n

@@ -331,7 +331,11 @@ template<typename T> class TabExt2 : private tabExt<T>
     T getCopie(const size_t &, const size_t &) const;
     size_t nLines() const;
     size_t nCols() const;
+
+    //this class from tradingBots library need to access the search function for univariate tab
+    friend class tradingState;
 };
+
 
 //feuille de donné pouvant lire et écrire en csv
 class Table : public TabExt2<std::string>

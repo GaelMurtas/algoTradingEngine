@@ -40,11 +40,30 @@ IndexOutOfRange::IndexOutOfRange(const void*  ptr, const std::source_location & 
 }
 
 ForbidenConstruction::ForbidenConstruction(const std::source_location & location) :
-    Exception(NULL, location, ExceptionType::error){
+    Exception(NULL, location, Exception::ExceptionType::error){
 }
 
 SuspectConstruction::SuspectConstruction(const std::source_location & location) :
-    Exception(NULL, location, ExceptionType::warning){
+    Exception(NULL, location, Exception::ExceptionType::warning){
+}
+
+void conversionErrorDetected(const std::source_location & l){
+     conversionFailure e(NULL, l, Exception::ExceptionType::fatal_error);
+     e.message = "Une conversion entre deux types d'un élément essentiel au programme a échoué.";
+     e.affiche();
+     if(Exception::THROW) throw e;
+     else exit(-1);
+}
+
+
+void fileFormatErrorDetected(const std::source_location & l , const std::string & path){
+     wrongFileFormat e(NULL, l, Exception::ExceptionType::fatal_error);
+     e.message = "information manquante on illisible dans le fichier : \"";
+     e.message += path;
+     e.message += "\" .";
+     e.affiche();
+     if(Exception::THROW) throw e;
+     else exit(-1);
 }
 
 /*inutile créé une erreur de compilation

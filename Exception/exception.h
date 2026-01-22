@@ -99,10 +99,10 @@ namespace tabException
 
 /*
  * Fonction d'identification généraliste efficace, géré par template pour faire le maximum au moment de la compilation
+ * We call this functions in the publics parts of the programme to endel exception
  */
 
 //vérification qu'une valeur donnée soit dans les bornes établies
-
 template<bool activateException, typename valueType>
 class ValueOutOfBound: private Exception{
      using Exception::Exception;
@@ -154,6 +154,16 @@ class SuspectInputs<false, valuesTypes ...> : private Exception{
      }
 };
 
+//we call this if an important type conversion fail 
+//no need to template here cause we won't disable this exception
+void conversionErrorDetected(const std::source_location &);
+
+//we call this if an important information from a file is missing
+//no need to template here cause we won't disable this exception
+void fileFormatErrorDetected(const std::source_location & l , const std::string & path);
+
+
+//Ancien format d'exception a mettre à jour
 //exception pour tester la validitée des pointeurs
 template<bool activateException, typename ptrType>
 class UnexpectedEmptyPointer : private Exception{
@@ -170,6 +180,7 @@ class UnexpectedEmptyPointer : private Exception{
           }
      }
 };
+
 
 /*
  * les différentes exceptions du programme
@@ -195,6 +206,16 @@ class SuspectConstruction : public Exception{
     private :
         using Exception::Exception;
         SuspectConstruction(const std::source_location &);
+};
+
+class conversionFailure : public Exception{
+     friend void conversionErrorDetected(const std::source_location &);
+     using Exception::Exception;
+};
+
+class wrongFileFormat : public Exception{
+     friend void fileFormatErrorDetected(const std::source_location &, const std::string &);
+     using Exception::Exception;
 };
 
 /*inutes car le cas géré par cette exception cré une erreur de compilation

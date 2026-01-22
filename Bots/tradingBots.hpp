@@ -114,13 +114,23 @@ class uniqueOrder : public limitOrder<real, bot>{
 //template<tradidingBot_type botType> voir plus tard si necessaire
 class tradingState{
      private:
+     //trading state data
      double initialCapital;
      double currentCapital;
-     //positions encode as a pair 1-entry price 2-entry size (negative if short)
+     //positions encode as entree price and entree size (negative if short)
      //A FAIRE: faire une classe position générale qui permet d'avoir plus infos
      //nombres d'entrées, valeurs actuelles de la position, date d'entrées ...
-     std::pair<double, double> currentPosition;
+     double currentPositionEntree, currentPositionSize;
      //no need to save the state of current open order cause it's save in a specific order file
+
+     //trading state file related infos
+     const std::string stateFilePath;
+     Table stateFileContent;
+
+     protected:
+          //method to use by botCommunicationWay
+          void readState();
+          void writeState();
 
      public :
      tradingState(const std::string & path);
@@ -132,25 +142,32 @@ class tradingState{
      double & getCap(){
           return currentCapital;
      }
-     std::pair<double, double> getPos(){
-          return currentPosition;
+     double & getPosEntree(){
+          return currentPositionEntree;
      }
+     double & getPosSize(){
+          return currentPositionSize;
+     }
+
+          void writeState(const tradingState &);
+          tradingState getState();
 };
 
 
 //class to ensure comunication bettewn itch bot and corrects files
+//heritate of trading state for writing convenance
 //use only for real trading
 template<tradidingBot_type botType>
-class botCommunicationWay{
+class botCommunicationWay: public tradingState{
      public:
           //the trading bot witch comunicatitate via this instance
           const tradingBot * adrBot;
           //the path of communication files
-          const std::string dataPath, eventPath, orderPath, satePath;
+          const std::string dataPath, eventPath, orderPath;
 
           //open and verify access to file in constructor
           //also charge existing file in memory
-          botCommunicationWay();
+          botCommunicationWay(const tradingBot &, const std::string &, const std::string &, const std::string &, const std::string &);
 
           //close all files
           ~botCommunicationWay();
@@ -158,10 +175,8 @@ class botCommunicationWay{
           //actual function use by over class to allow comunication between the bots and the files
           void addOrder(const SignalMap<botType> &);
           void addEvent(const event &);
-          void writeState(const tradingState &);
           event getLastEvent();
           Bougie getLastCandel();
-          tradingState getState();
 
      private:
           //contant of comunication file loaded in memory
@@ -169,10 +184,8 @@ class botCommunicationWay{
           //write and read corespond table in files
           void readOrders();
           void readEvents();
-          void readState();
           void writeOreders();
           void writeEvents();
-          void writeState();
 };
 
 //we weed to wtach out the change in key files for bots to react
