@@ -11,6 +11,10 @@
 //#include "../Trading/trading.h"
 #include "iterator.hpp"
 
+//pre-declaration for convenace
+template<typename T, unsigned V, bool B>
+class TabExt;
+
 //tableau dynamique générique basique ultra rapide
 template<typename T>
 class Tab{
@@ -115,6 +119,10 @@ class Tab{
            //astuce pour renvoyer un itérateur à la position juste après la fin du tableau en exciquant la détection d'erreur du construcetur
           return constIterator(*this, length);
       }
+
+      //friendship declaration
+     template<typename Y, unsigned V, bool B>
+     friend class TabExt;
 };
 
 /*
@@ -139,6 +147,7 @@ class TabExt : public Tab<T>{
           TabExt();
           TabExt(size_t);
           TabExt(const Tab<T> &);
+          TabExt(const TabExt<T,V,B> &);
 
           //accesseur
           size_t allocSize(){
@@ -151,6 +160,9 @@ class TabExt : public Tab<T>{
           TabExt& operator + (const T&);
 
           void operator=(const Tab<T> &);
+          void operator=(const TabExt<T, V, B> & ntab){
+               operator = (static_cast<Tab<T>>(ntab));
+          }
 };
 
 //cas B=false
@@ -318,12 +330,21 @@ class TabExt<T>::Iterator
 //tableau dynamique en dimension 2
 template<typename T> class TabExt2 : private tabExt<T>
 {
+     //A faire : 
+     // operateur []
+     // modifier get pour être indexé de 0 a n-1
+     // créé plus d'accesseurs getconbst getref ...
+     // créé accesseur indexer de 1 a n (get1, get1const ...)
+     // choisir entre ajout rapide de ligne et de colone a imlémenter ou hérité durectement de tab et non tabExt
+     // (sans possibilité d'ajout d'éléments le coter extensibles est inutile
+
   private:
     size_t nbl;//nombre de ligne
     size_t nbc;//nombre de colonnes
     
   public:
     TabExt2(const tabExt<T> &);
+    TabExt2(const TabExt2<T> &);
     TabExt2(const size_t &, const size_t &);
     
     //accesseur
@@ -331,6 +352,9 @@ template<typename T> class TabExt2 : private tabExt<T>
     T getCopie(const size_t &, const size_t &) const;
     size_t nLines() const;
     size_t nCols() const;
+
+    //operators
+    void operator=(const TabExt2<T> &);
 
     //this class from tradingBots library need to access the search function for univariate tab
     friend class tradingState;
@@ -341,6 +365,7 @@ template<typename T> class TabExt2 : private tabExt<T>
 class Table : public TabExt2<std::string>
 {
     using TabExt2<std::string>::TabExt2;
+    using TabExt2<std::string>::operator=;
 
     private:
     char dl,dc,df;//les délimiteur de lignes et colonnes pour les entrer ou sorties, ainsi que la valeur par défault des donnée vides

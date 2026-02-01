@@ -10,6 +10,9 @@ template<typename T, unsigned V, bool B> TabExt<T, V, B>::TabExt(size_t n): tab<
 template<typename T, unsigned V, bool B> TabExt<T, V, B>::TabExt(const tab<T> & A) : tab<T>(A), alloc(A.length){
 }
 
+template<typename T, unsigned V, bool B> TabExt<T, V, B>::TabExt(const TabExt<T,V,B> & A) : tab<T>(A), alloc(A.length){
+}
+
 template<typename T, unsigned V, bool B> void TabExt<T, V, B>::extend(){
   if (length < alloc) return;
   alloc+=V*length+1;
@@ -29,12 +32,14 @@ template<typename T, unsigned V, bool B> TabExt<T, V, B>& TabExt<T, V, B>::opera
     pushBack(A);
   return *this;}
 
-  template<typename T, unsigned V, bool B> void TabExt<T, V, B>::operator = (const Tab<T> & tab){
-    length = tab.lenth;
-    alloc = tab.length;
+  template<typename T, unsigned V, bool B> void TabExt<T, V, B>::operator = (const Tab<T> & ntab){
+    //std::cout << "TabExt<T, V, B>::operator= \n";
+    length = ntab.length;
+    alloc = ntab.length;
     delete[] data;
     data = new T[length];
     for(size_t i=0; i<length; i++){
-        data[i] = tab.data[i];
+        data[i] = ntab.data[i];
     }
+
 }

@@ -13,6 +13,9 @@ template<typename T> TabExt2<T>::TabExt2(const tabExt<T> & ntab):tabExt<T>(ntab)
     nbc = ntab.nbc;
 }
 
+template<typename T> TabExt2<T>::TabExt2(const TabExt2<T> & ntab):tabExt<T>(ntab), nbl(ntab.nbl), nbc(ntab.nbc){
+}
+
 template<typename T> TabExt2<T>::TabExt2(const size_t & nl, const size_t & nc):tabExt<T>(tabExt2ConstChec<T>(nl, nc)){
     nbl=nl;
     nbc=nc;
@@ -48,3 +51,10 @@ template<typename T> size_t TabExt2<T>::nCols() const
 {
     return nbc;
 }
+
+ template<typename T> void TabExt2<T>::operator=(const TabExt2<T> & toCopie){
+      //std::cout << "TabExt2<T>::operator= \n";
+      tabExt<T>::operator=(static_cast<tabExt<T>>(toCopie));
+      nbl = toCopie.nbl;
+      nbc = toCopie.nbc;
+ }

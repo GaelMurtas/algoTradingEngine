@@ -160,10 +160,15 @@ int main(){
     cout << "SUCCES \n";*/
     
      //SmartDCA test
-     TimeFrame tf(1,TimeUnit::h);
+     /*TimeFrame tf(1,TimeUnit::h);
      smartDCA dca("./Donnée/empty", tf);
      trainingEnvironment<smartDCA> TE("./Donnée/testStocReturnShort", tf, dca);
-     TE.launchTraining();
+     TE.launchTraining();*/
+
+     //tradingState test
+     tradingState ts("./Donnée/exempleState");
+     ts.getTable().affiche();
+     ts.getPosSize() = 1;
      return 0;
 }
 

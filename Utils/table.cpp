@@ -64,6 +64,8 @@ void Table::affiche() const{
 }
 
 void Table::CSV(const string & path) const{
+     //A FAIRE: nos fonction publique ne devrais pas lever d'exceptrion
+     //la géré ici et utiliser le systhème d'exception de la bili exception au lieu de la lever
     ofstream file(path, ifstream::out);
     if (!file.is_open()) {
         FileError e(path);
@@ -75,6 +77,8 @@ void Table::CSV(const string & path) const{
 string readFile(const string & path) {
     string s;
     char c;
+     //A FAIRE: nos fonction publique ne devrais pas lever d'exceptrion
+     //la géré ici et utiliser le systhème d'exception de la bili exception au lieu de la lever
      ifstream file(path, ifstream::in);
     if (!file.is_open()) {
         FileError e(path);

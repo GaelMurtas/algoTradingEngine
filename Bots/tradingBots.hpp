@@ -127,6 +127,10 @@ class tradingState{
      const std::string stateFilePath;
      Table stateFileContent;
 
+     //create a new table with actual data to replace the old one
+     //automaticly call on writing
+     void refreshTable();
+
      protected:
           //method to use by botCommunicationWay
           void readState();
@@ -134,7 +138,9 @@ class tradingState{
 
      public :
      tradingState(const std::string & path);
+     //we automaticly save the state on destruction
      ~tradingState();
+
      //accessors
      const double & getItitCap() const{
           return initialCapital;
@@ -148,9 +154,14 @@ class tradingState{
      double & getPosSize(){
           return currentPositionSize;
      }
+     const Table & getTable(){
+          return stateFileContent;
+     }
 
-          void writeState(const tradingState &);
-          tradingState getState();
+     //direct access to the state by the tradingBot Object
+     //A FAIRE : Implémenter ces méthodes
+     static void writeState(const tradingBot &);
+     static tradingState getState(const tradingBot &);
 };
 
 
